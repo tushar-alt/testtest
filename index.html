@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NSE Live Data (via Vercel Proxy)</title>
+  <style>
+    body { margin:0; font-family: system-ui, Arial; background:#0b0f14; color:#e9f0f7; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 18px; }
+    .card { background:#0f1620; border:1px solid #1f2b3a; border-radius:14px; padding:14px; }
+    button { padding:10px 12px; border-radius:10px; border:1px solid #1f2b3a; background:#142235; color:#fff; cursor:pointer; }
+    button:disabled { opacity:.6; cursor:not-allowed; }
+    pre { background:#0c121b; border:1px solid #1f2b3a; border-radius:14px; padding:12px; overflow:auto; max-height: 70vh; }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .muted { color:#9fb0c3; font-size:12px; }
+    input { flex:1; min-width:260px; padding:10px 12px; border-radius:10px; border:1px solid #1f2b3a; background:#0c121b; color:#e9f0f7; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>NSE Live Data (Works because backend proxy)</h2>
+
+    <div class="card">
+      <div class="row">
+        <input id="path" value="NextApi/apiClient?functionName=getIndexData&type=All" />
+        <button id="btn">Fetch</button>
+      </div>
+      <div class="muted" style="margin-top:8px;">
+        Tip: You can change the path above to test other NSE endpoints (we pass it to the backend).
+      </div>
+    </div>
+
+    <div style="height:12px"></div>
+
+    <div class="card">
+      <div class="row">
+        <div class="muted" id="meta">Status: —</div>
+      </div>
+      <pre id="out">{}</pre>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById("btn");
+    const out = document.getElementById("out");
+    const meta = document.getElementById("meta");
+    const path = document.getElementById("path");
+
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      meta.textContent = "Status: loading...";
+      out.textContent = "";
+
+      try {
+        const res = await fetch(`/api/nse?path=${encodeURIComponent(path.value.trim())}`);
+        const text = await res.text();
+
+        meta.textContent = `Status: ${res.status}`;
+        try {
+          out.textContent = JSON.stringify(JSON.parse(text), null, 2);
+        } catch {
+          out.textContent = text;
+        }
+      } catch (e) {
+        meta.textContent = "Status: ERROR";
+        out.textContent = String(e?.message || e);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
