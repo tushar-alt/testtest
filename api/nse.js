@@ -1,3 +1,17 @@
+/**
+ * Vercel Serverless Function: NSE India API Proxy
+ *
+ * Proxies requests to https://www.nseindia.com/api/ with cookie management.
+ * NSE India requires a valid session cookie, so this function performs a
+ * warm-up request to the homepage first, captures the cookie, and forwards
+ * it with the actual API call.
+ *
+ * Usage:
+ *   GET /api/nse?path=NextApi/apiClient?functionName=getIndexData&type=All
+ *
+ * @param {import('http').IncomingMessage} req  - HTTP request object
+ * @param {import('http').ServerResponse}  res  - HTTP response object
+ */
 export default async function handler(req, res) {
   try {
     const path = (req.query.path || "").toString().trim();
